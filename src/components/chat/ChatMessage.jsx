@@ -1,8 +1,49 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
 
-export default function ChatMessage({ message, isUser, isLoading }) {
+function formatMessage(text) {
+    if (!text) return null
+    
+    const lines = text.split('\n')
+    const elements = []
+    
+    lines.forEach((line, index) => {
+        if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
+            // Bold heading
+            elements.push(
+                <p key={index} className="font-semibold text-foreground mt-3 first:mt-0">
+                    {line.slice(2, -2)}
+                </p>
+            )
+        } else if (line.startsWith('**') && line.includes(':**')) {
+            // Bold label with value
+            const match = line.match(/\*\*(.+?):\*\*\s*(.*)/)
+            if (match) {
+                elements.push(
+                    <p key={index} className="mt-1">
+                        <span className="font-medium">{match[1]}:</span> {match[2]}
+                    </p>
+                )
+            } else {
+                elements.push(<p key={index} className="mt-1">{line}</p>)
+            }
+        } else if (line.match(/^\d+\.\s/)) {
+            // Numbered list
+            elements.push(
+                <p key={index} className="ml-4 mt-1">{line}</p>
+            )
+        } else if (line.trim() === '') {
+            elements.push(<br key={index} />)
+        } else {
+            elements.push(<p key={index} className="mt-1">{line}</p>)
+        }
+    })
+    
+    return elements
+}
+
+export default function ChatMessage({ message, isUser, isLoading, isError }) {
     return (
         <div className={`flex gap-4 mb-6 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* Avatar */}
@@ -17,26 +58,32 @@ export default function ChatMessage({ message, isUser, isLoading }) {
                 ) : (
                     <>
                         <AvatarImage src="/ai-avatar.png" alt="AI" />
-                        <AvatarFallback className="bg-primary/10 text-primary border border-primary/20">
-                            A
+                        <AvatarFallback className={`${isError ? 'bg-red-100 text-red-600 border-red-200' : 'bg-primary/10 text-primary border-primary/20'} border`}>
+                            {isError ? <AlertCircle className="w-5 h-5" /> : 'A'}
                         </AvatarFallback>
                     </>
                 )}
             </Avatar>
 
             {/* Message Content */}
-            <div className={`flex flex-col max-w-[75%] ${isUser ? 'items-end' : 'items-start'}`}>
+            <div className={`flex flex-col max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
                 <Card className={`p-4 ${isUser
                     ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                    : 'bg-card/50 backdrop-blur border-border/50'
+                    : isError 
+                        ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+                        : 'bg-card/50 backdrop-blur border-border/50'
                     }`}>
                     {isLoading ? (
                         <div className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm">Creating animation specification...</span>
+                            <span className="text-sm">Generating animation specification...</span>
                         </div>
-                    ) : (
+                    ) : isUser ? (
                         <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message}</p>
+                    ) : (
+                        <div className="text-sm leading-relaxed">
+                            {formatMessage(message)}
+                        </div>
                     )}
                 </Card>
 

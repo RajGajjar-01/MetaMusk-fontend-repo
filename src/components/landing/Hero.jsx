@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/context/AuthContext'
 
 function FloatingPaths({ position }) {
     const paths = Array.from({ length: 36 }, (_, i) => ({
@@ -46,7 +45,6 @@ function FloatingPaths({ position }) {
 }
 
 export default function Hero({ onTryNow }) {
-    const { isAuthenticated } = useAuth()
     const title = 'Chat to create Manim animation'
     const words = title.split(' ')
 

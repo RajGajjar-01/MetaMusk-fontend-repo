@@ -1,18 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '@/components/landing/Header'
 import Hero from '@/components/landing/Hero'
-import { useAuth } from '@/context/AuthContext'
 
 export default function LandingPage() {
-    const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 
     const handleTryNow = () => {
-        if (isAuthenticated) {
-            navigate('/chat')
-        } else {
-            navigate('/login')
-        }
+        navigate('/chat')
     }
 
     return (
